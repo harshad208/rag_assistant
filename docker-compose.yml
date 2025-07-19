@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+ 
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+  
+  sqlite_db:
+    image: nouchka/sqlite3:latest
+    container_name: sqlite_db
+    stdin_open: true # Allows you to interact with the container
+    tty: true      # Allocates a pseudo-TTY
+    volumes:
+      - sqlite_data:/data/
+    restart: unless-stopped
+ 
+
+networks:
+  platform-net:
+    driver: bridge
+
+volumes:
+
+  ollama:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ./DockerMountPath/ollama
+    
+  sqlite_data:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ./DockerMountPath/sqlite_data
+    
