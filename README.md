@@ -60,7 +60,7 @@ Follow these steps to get the project running on your local machine.
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/rag-assistant.git
+git clone https://github.com/harshad208/rag_assistant.git
 cd rag-assistant
 ```
 **Note:** Replace `your-username/rag-assistant.git` with the actual URL of your repository.
