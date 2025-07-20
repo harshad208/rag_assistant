@@ -1,5 +1,3 @@
-# In app/main.py
-
 import streamlit as st
 import os
 import time
@@ -8,20 +6,15 @@ from rag_chain import get_rag_chain
 from database_utils import init_database, log_query
 from embed_store import create_vector_store
 
-# --- Page Configuration ---
 st.set_page_config(page_title="Intelligent RAG Assistant", layout="wide")
 
-# --- Constants ---
 DATA_DIR = "data"
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'db', 'chroma')
 
-# --- Initialization ---
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 init_database()
 
-# --- Intelligent State Management Functions ---
-# (No changes needed in these functions)
 def get_processed_documents_from_db():
     if not os.path.exists(DB_PATH):
         return set()
@@ -29,12 +22,11 @@ def get_processed_documents_from_db():
         client = chromadb.PersistentClient(path=DB_PATH)
         collection = client.get_collection(name="langchain")
         metadata = collection.get(include=["metadatas"])
-        if not metadata['ids']: # Handle empty collection
+        if not metadata['ids']:
             return set()
         processed_sources = {meta['source'] for meta in metadata['metadatas']}
         return processed_sources
     except Exception:
-        # This can happen if the DB is there but the collection isn't yet.
         return set()
 
 def get_unprocessed_files():
@@ -44,11 +36,9 @@ def get_unprocessed_files():
     return [os.path.basename(f) for f in unprocessed_paths]
 
 
-# --- Sidebar UI ---
 with st.sidebar:
     st.header("🛠️ Document Management")
 
-    # --- MODIFIED: File Uploader Logic ---
     uploaded_files = st.file_uploader(
         "Upload new documents",
         type=['pdf', 'txt', 'docx'],
@@ -64,14 +54,11 @@ with st.sidebar:
                     f.write(uploaded_file.getbuffer())
                 files_saved += 1
         
-        # Give feedback ONLY if new files were actually saved
         if files_saved > 0:
             st.success(f"{files_saved} new document(s) uploaded. The 'Process' button is now available below.")
-            # DO NOT use st.rerun() here. Let Streamlit's natural flow handle the refresh.
 
     st.divider()
 
-    # --- Smart "Process Documents" Button (No changes needed here) ---
     unprocessed_files = get_unprocessed_files()
     if unprocessed_files:
         st.info(f"Found {len(unprocessed_files)} unprocessed document(s):")
@@ -81,15 +68,14 @@ with st.sidebar:
         if st.button("Process New Documents"):
             with st.spinner("Processing documents... This may take a moment."):
                 create_vector_store()
-                # Clear cache after processing to ensure the RAG chain reloads
+
                 st.cache_resource.clear()
                 st.success("Knowledge base updated successfully!")
                 time.sleep(2)
-                st.rerun() # This rerun is SAFE and GOOD because it's after a completed action.
+                st.rerun() 
 
     st.header("📄 Select Documents to Query")
     
-    # We now get the list of processed docs for the user to select from
     processed_docs_basenames = [os.path.basename(f) for f in get_processed_documents_from_db()]
 
     if not processed_docs_basenames:
@@ -102,7 +88,7 @@ with st.sidebar:
             default=sorted(processed_docs_basenames)
         )
 
-# --- Main Application UI and Chat Logic (No changes needed here) ---
+
 st.title("🤖 Intelligent RAG AI Assistant")
 st.markdown("Upload documents and process them. Then, ask questions based on your selection.")
 
@@ -113,7 +99,7 @@ else:
     def load_rag_chain(selected_files):
         return get_rag_chain(selected_files=selected_files)
 
-    rag_chain = load_rag_chain(tuple(sorted(selected_docs))) # Use a tuple to make it hashable for caching
+    rag_chain = load_rag_chain(tuple(sorted(selected_docs))) 
 
     st.header("💬 Ask Your Questions")
     question = st.text_input(

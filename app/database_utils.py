@@ -1,20 +1,15 @@
-# In app/database_utils.py
-
 import sqlite3
 import os
 from datetime import datetime
+import logging
 
-# --- Configuration ---
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'db', 'rag_log.db')
 
-def init_database():
-    """Initializes the SQLite database and creates the log table if it doesn't exist."""
-    try:
-        # The connect function will create the file if it doesn't exist
+def init_database():    
+    try:    
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Create table if it doesn't exist
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS query_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,11 +22,11 @@ def init_database():
         conn.close()
         print("Database initialized successfully.")
     except sqlite3.Error as e:
-        print(f"Database error: {e}")
+        logging.error(f"Database error: {str(e)}", exc_info=True)
 
 
 def log_query(question: str, answer: str):
-    """Logs a question and its corresponding answer to the database."""
+
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -45,12 +40,10 @@ def log_query(question: str, answer: str):
         conn.commit()
         conn.close()
     except sqlite3.Error as e:
-        print(f"Failed to log query: {e}")
+        logging.error(f"Failed to log query: {str(e)}", exc_info=True)
 
-if __name__ == '__main__':
-    # This allows you to initialize the database from the command line
+if __name__ == '__main__':    
     print(f"Initializing database at: {DB_PATH}")
-    init_database()
-    # Example log entry
+    init_database()    
     log_query("This is a test question.", "This is a test answer.")
     print("Test log entry added.")
